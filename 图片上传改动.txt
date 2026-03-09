@@ -1,0 +1,11 @@
+新增文件 （4个）：
+
+- src/app/dashboard/image-upload/page.tsx - 图片上传页面
+- src/components/dashboard/image-upload/image-uploader.tsx - 图片上传组件
+- src/app/api/upload-to-jetson/route.ts - API路由
+- jetson_workspace/tcp/image_server_jetson.py - Jetson端服务器
+修改文件 （2个）：
+
+- src/components/dashboard/layout/config.ts - 添加导航项
+- src/paths.ts - 添加路径配置
+这些改动完全实现了图片上传功能，支持USB和WiFi两种连接方式。
