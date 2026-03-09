@@ -1,0 +1,48 @@
+# Python 缓存
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# 虚拟环境
+venv/
+env/
+ENV/
+unet_env/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDE 配置
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 大型数据集（不上传）
+data/membrane/train/
+pascal_voc_person/
+pascal_voc_person/VOCdevkit/
+person_segmentation/dataset/train/
+person_segmentation/real_person_dataset/
+person_segmentation/coco_person/
+
+# 个人测试图片（不上传）
+dataset/test/*.jpg
+dataset/test/*.jpeg
+dataset/test/*.JPG
+dataset/test/*.JPEG
+
+# 下载的压缩文件（不上传）
+*.tar
+*.tar.gz
+*.zip
+
+# 日志文件
+*.log
+
+# 临时文件
+*.tmp
+*.bak
