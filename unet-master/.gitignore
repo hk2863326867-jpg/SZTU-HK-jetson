@@ -10,6 +10,7 @@ venv/
 env/
 ENV/
 unet_env/
+python_packages/
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -46,3 +47,23 @@ dataset/test/*.JPEG
 # 临时文件
 *.tmp
 *.bak
+
+# 大型模型文件（超过100MB，无法上传到GitHub）
+*.keras
+*.hdf5
+*.h5
+*.pb
+*.onnx
+
+# TensorFlow 大型文件
+*.dll
+tensorflow/
+tensorflow_cpu/
+tensorflow_gpu/
+
+# 其他大型文件
+*.pth
+*.pt
+*.ckpt
+*.index
+*.data-*
