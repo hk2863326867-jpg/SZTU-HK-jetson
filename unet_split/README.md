@@ -6,15 +6,19 @@
 
 ```
 unet_split/
-├── model_encoder.py        # U-Net 编码器模型
-├── model_decoder.py        # U-Net 解码器模型
-├── extract_weights.py      # 从完整模型提取权重
-├── jetson_server.py        # Jetson 端服务器
-├── local_server.py         # 本地端服务器
-├── test_split_model.py     # 测试脚本
-├── saved_weights/          # 保存的权重文件
-├── output/                 # 本地端输出结果
-└── README.md               # 项目文档
+├── training/                      # 训练相关代码
+│   ├── model_pytorch_v3.py        # 完整U-Net模型定义
+│   ├── train_pytorch_v3.py        # 训练脚本
+│   └── saved_models/              # 训练好的完整模型
+├── model_encoder.py               # U-Net 编码器模型
+├── model_decoder.py               # U-Net 解码器模型
+├── extract_weights.py             # 从完整模型提取权重
+├── jetson_server.py               # Jetson 端服务器
+├── local_server.py                # 本地端服务器
+├── test_split_model.py            # 测试脚本
+├── saved_weights/                 # 保存的编码器/解码器权重
+├── test_results/                  # 测试结果输出
+└── README.md                      # 项目文档
 ```
 
 ## 🔧 技术栈
@@ -65,7 +69,7 @@ cd unet_split
 python extract_weights.py
 ```
 
-**注意**：确保 `saved_weights` 目录存在且包含完整的 U-Net 模型权重文件。
+**注意**：脚本会从 `training/saved_models/pytorch_unet_v3_final.pth` 加载完整模型，并将提取的权重保存到 `saved_weights/` 目录。
 
 ### 2. 部署步骤
 
@@ -230,11 +234,15 @@ pip install scikit-image -i https://pypi.tuna.tsinghua.edu.cn/simple
 ## 📋 完整部署清单
 
 ### 必须文件
+- [x] `training/model_pytorch_v3.py` - 完整U-Net模型定义
+- [x] `training/train_pytorch_v3.py` - 训练脚本
 - [x] `model_encoder.py` - 编码器模型
 - [x] `model_decoder.py` - 解码器模型
+- [x] `extract_weights.py` - 权重提取脚本
 - [x] `jetson_server.py` - Jetson 端服务器
 - [x] `local_server.py` - 本地端服务器
-- [x] `extract_weights.py` - 权重提取脚本
+- [x] `test_split_model.py` - 测试脚本
+- [x] `training/saved_models/pytorch_unet_v3_final.pth` - 完整模型权重
 - [x] `saved_weights/encoder_weights.pth` - 编码器权重
 - [x] `saved_weights/decoder_weights.pth` - 解码器权重
 
