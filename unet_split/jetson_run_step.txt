@@ -1,0 +1,12 @@
+docker run --runtime=nvidia -it --rm \
+    --name unet-encoder \
+    -v /home/nvidia/workspace/unet_workspace:/workspace \
+    -p 9000:9000 \
+    nvcr.io/nvidia/pytorch:24.12-py3
+    
+    
+pip uninstall -y numpy
+pip install numpy==1.26.4 scikit-image opencv-python Pillow
+
+cd /workspace
+python jetson_server.py
