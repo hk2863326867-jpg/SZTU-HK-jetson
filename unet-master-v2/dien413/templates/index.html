@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品推荐系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin-top: 50px;
+        }
+        .card {
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .history-item, .candidate-item {
+            margin-bottom: 10px;
+        }
+        .recommendation {
+            border: 2px solid #007bff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 123, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #007bff;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-5">商品推荐系统</h1>
+        
+        <div class="row">
+            <!-- 左侧：输入区域 -->
+            <div class="col-md-6">
+                <div class="card p-4 mb-5">
+                    <h3>用户信息</h3>
+                    <div class="mb-3">
+                        <label for="user-id" class="form-label">用户ID</label>
+                        <input type="text" class="form-control" id="user-id" value="1000001">
+                    </div>
+                    
+                    <h3 class="mt-4">历史浏览商品</h3>
+                    <div id="history-items">
+                        <div class="history-item row">
+                            <div class="col-md-5">
+                                <label class="form-label">商品ID</label>
+                                <input type="text" class="form-control" value="3108855">
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label">类别ID</label>
+                                <input type="text" class="form-control" value="794437">
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn btn-danger w-100">删除</button>
+                            </div>
+                        </div>
+                        <div class="history-item row">
+                            <div class="col-md-5">
+                                <label class="form-label">商品ID</label>
+                                <input type="text" class="form-control" value="2640191">
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label">类别ID</label>
+                                <input type="text" class="form-control" value="794437">
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn btn-danger w-100">删除</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="add-history" class="btn btn-primary mt-3">添加历史商品</button>
+                    
+                    <h3 class="mt-4">候选商品</h3>
+                    <div id="candidate-items">
+                        <div class="candidate-item row">
+                            <div class="col-md-5">
+                                <label class="form-label">商品ID</label>
+                                <input type="text" class="form-control" value="3108855">
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label">类别ID</label>
+                                <input type="text" class="form-control" value="794437">
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn btn-danger w-100">删除</button>
+                            </div>
+                        </div>
+                        <div class="candidate-item row">
+                            <div class="col-md-5">
+                                <label class="form-label">商品ID</label>
+                                <input type="text" class="form-control" value="2640191">
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label">类别ID</label>
+                                <input type="text" class="form-control" value="794437">
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn btn-danger w-100">删除</button>
+                            </div>
+                        </div>
+                        <div class="candidate-item row">
+                            <div class="col-md-5">
+                                <label class="form-label">商品ID</label>
+                                <input type="text" class="form-control" value="2203057">
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label">类别ID</label>
+                                <input type="text" class="form-control" value="794437">
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn btn-danger w-100">删除</button>
+                            </div>
+                        </div>
+                        <div class="candidate-item row">
+                            <div class="col-md-5">
+                                <label class="form-label">商品ID</label>
+                                <input type="text" class="form-control" value="2735466">
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label">类别ID</label>
+                                <input type="text" class="form-control" value="1464116">
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn btn-danger w-100">删除</button>
+                            </div>
+                        </div>
+                        <div class="candidate-item row">
+                            <div class="col-md-5">
+                                <label class="form-label">商品ID</label>
+                                <input type="text" class="form-control" value="1522137">
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label">类别ID</label>
+                                <input type="text" class="form-control" value="1464116">
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn btn-danger w-100">删除</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="add-candidate" class="btn btn-primary mt-3">添加候选商品</button>
+                    
+                    <button id="generate-recommendation" class="btn btn-success mt-4 w-100">生成推荐</button>
+                </div>
+            </div>
+            
+            <!-- 右侧：推荐结果 -->
+            <div class="col-md-6">
+                <div class="card p-4">
+                    <h3>推荐结果</h3>
+                    <div id="recommendation-result" class="mt-4">
+                        <p class="text-muted">请点击"生成推荐"按钮获取推荐结果</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 添加历史商品
+        document.getElementById('add-history').addEventListener('click', function() {
+            const historyItems = document.getElementById('history-items');
+            const newItem = document.createElement('div');
+            newItem.className = 'history-item row';
+            newItem.innerHTML = `
+                <div class="col-md-5">
+                    <label class="form-label">商品ID</label>
+                    <input type="text" class="form-control">
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">类别ID</label>
+                    <input type="text" class="form-control">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-danger w-100">删除</button>
+                </div>
+            `;
+            historyItems.appendChild(newItem);
+            // 添加删除事件
+            newItem.querySelector('.btn-danger').addEventListener('click', function() {
+                newItem.remove();
+            });
+        });
+        
+        // 添加候选商品
+        document.getElementById('add-candidate').addEventListener('click', function() {
+            const candidateItems = document.getElementById('candidate-items');
+            const newItem = document.createElement('div');
+            newItem.className = 'candidate-item row';
+            newItem.innerHTML = `
+                <div class="col-md-5">
+                    <label class="form-label">商品ID</label>
+                    <input type="text" class="form-control">
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">类别ID</label>
+                    <input type="text" class="form-control">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-danger w-100">删除</button>
+                </div>
+            `;
+            candidateItems.appendChild(newItem);
+            // 添加删除事件
+            newItem.querySelector('.btn-danger').addEventListener('click', function() {
+                newItem.remove();
+            });
+        });
+        
+        // 生成推荐
+        document.getElementById('generate-recommendation').addEventListener('click', function() {
+            // 显示加载状态
+            const resultDiv = document.getElementById('recommendation-result');
+            resultDiv.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>正在生成推荐，请稍候...</p>
+                </div>
+            `;
+            
+            // 获取用户ID
+            const userId = document.getElementById('user-id').value;
+            
+            // 获取历史商品
+            const historyItems = [];
+            const historyCategories = [];
+            document.querySelectorAll('.history-item').forEach(item => {
+                const itemId = item.querySelector('input[type="text"]').value;
+                const categoryId = item.querySelectorAll('input[type="text"]')[1].value;
+                if (itemId && categoryId) {
+                    historyItems.push(itemId);
+                    historyCategories.push(categoryId);
+                }
+            });
+            
+            // 获取候选商品
+            const candidateItems = [];
+            const candidateCategories = [];
+            document.querySelectorAll('.candidate-item').forEach(item => {
+                const itemId = item.querySelector('input[type="text"]').value;
+                const categoryId = item.querySelectorAll('input[type="text"]')[1].value;
+                if (itemId && categoryId) {
+                    candidateItems.push(itemId);
+                    candidateCategories.push(categoryId);
+                }
+            });
+            
+            // 构建请求数据
+            const requestData = {
+                user_id: userId,
+                history_items: historyItems,
+                history_categories: historyCategories,
+                candidate_items: candidateItems,
+                candidate_categories: candidateCategories
+            };
+            
+            // 发送请求
+            fetch('http://localhost:5000/recommend', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 显示推荐结果
+                if (data.recommendations && data.recommendations.length > 0) {
+                    const topRecommendation = data.recommendations[0];
+                    resultDiv.innerHTML = `
+                        <div class="recommendation">
+                            <h4>推荐商品</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=product%20${topRecommendation.item_id}&image_size=square_hd" alt="商品图片" class="product-image">
+                                </div>
+                                <div class="col-md-6">
+                                    <h5>商品ID: ${topRecommendation.item_id}</h5>
+                                    <p>预测点击概率: ${(topRecommendation.score * 100).toFixed(2)}%</p>
+                                    <p class="text-success">这是根据您的历史行为推荐的最可能点击的商品</p>
+                                </div>
+                            </div>
+                            <h5 class="mt-4">其他推荐</h5>
+                            <div class="row mt-2">
+                                ${data.recommendations.slice(1, 4).map(item => `
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card">
+                                            <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=product%20${item.item_id}&image_size=square" alt="商品图片" class="card-img-top product-image">
+                                            <div class="card-body">
+                                                <h6>商品ID: ${item.item_id}</h6>
+                                                <p class="card-text">概率: ${(item.score * 100).toFixed(2)}%</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<p class="text-danger">无法生成推荐，请检查输入数据</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resultDiv.innerHTML = '<p class="text-danger">生成推荐时出错，请稍后重试</p>';
+            });
+        });
+        
+        // 为现有删除按钮添加事件
+        document.querySelectorAll('.btn-danger').forEach(button => {
+            button.addEventListener('click', function() {
+                this.closest('.history-item, .candidate-item').remove();
+            });
+        });
+    </script>
+</body>
+</html>

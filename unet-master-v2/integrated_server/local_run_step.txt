@@ -1,0 +1,133 @@
+# 整合本地端服务器 - 运行步骤
+
+## 目录结构
+```
+integrated_server/
+├── integrated_local_server.py    # 整合的本地端服务器
+├── integrated_edge_server.py      # 整合的边缘端服务器（部署到Jetson）
+├── unet_split/                    # UNet项目代码
+│   ├── model_encoder.py           # UNet编码器（Jetson端）
+│   ├── model_decoder.py           # UNet解码器（本地端）
+│   ├── saved_weights/             # UNet权重
+│   │   ├── encoder_weights.pth    # 编码器权重
+│   │   └── decoder_weights.pth     # 解码器权重
+│   └── ...
+├── dien_split/                    # DIEN项目代码
+│   ├── edge_encoder.py            # DIEN编码器（Jetson端）
+│   ├── local_decoder.py           # DIEN解码器（本地端）
+│   ├── checkpoints/               # DIEN检查点
+│   └── ...
+└── wifi_config.json               # WiFi配置文件
+```
+
+## 环境要求
+
+### 本地端环境
+- Python 3.8+
+- PyTorch
+- TensorFlow 2.10+
+- Flask
+- numpy, scikit-image
+
+### Jetson端环境
+- Python 3.8+
+- PyTorch
+- TensorFlow 2.10+
+- numpy, scikit-image
+
+## 启动本地端服务器
+
+1. 进入整合目录：
+```bash
+cd d:\OneDrive\桌面\github\unet-master\integrated_server
+```
+
+2. 安装依赖（如需要）：
+```bash
+pip install flask torch torchvision numpy scikit-image tensorflow
+```
+
+3. 启动服务器：
+```bash
+python integrated_local_server.py
+
+C:\Users\Hkuan\AppData\Local\Programs\Python\Python312\python.exe integrated_local_server.py
+```
+
+4. 服务地址：
+- UNet图像分割: http://localhost:5000/api/unet/segment
+- DIEN推荐服务: http://localhost:5000/api/dien/recommend
+- WiFi配置服务: http://localhost:5000/api/wifi/config
+- 健康检查服务: http://localhost:5000/api/health
+
+## API使用说明
+
+### 1. UNet图像分割
+**请求地址**: `POST http://localhost:5000/api/unet/segment`
+
+**参数**:
+- `image`: 图片文件
+- `jetsonIp`: Jetson设备IP地址（如 192.168.55.1 或 10.42.1.1）
+
+**示例**（使用curl）:
+```bash
+curl -X POST http://localhost:5000/api/unet/segment \
+  -F "image=@test_image.jpg" \
+  -F "jetsonIp=192.168.55.1"
+```
+
+### 2. DIEN个性化推荐
+**请求地址**: `POST http://localhost:5000/api/dien/recommend`
+
+**参数**:
+- `user_id`: 用户ID
+- `history_items`: 历史浏览物品ID列表
+- `history_categories`: 历史浏览物品类别列表
+- `candidate_items`: 候选物品ID列表
+- `candidate_categories`: 候选物品类别列表
+- `edge_ip`: 边缘端IP地址（可选，默认使用配置文件中的IP）
+
+**示例**（使用curl）:
+```bash
+curl -X POST http://localhost:5000/api/dien/recommend \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "USER001",
+    "history_items": ["P001", "P002"],
+    "history_categories": ["PHONE", "PHONE"],
+    "candidate_items": ["P003", "P004"],
+    "candidate_categories": ["PHONE", "PHONE"],
+    "edge_ip": "192.168.55.1"
+  }'
+```
+
+### 3. WiFi配置
+**获取配置**: `GET http://localhost:5000/api/wifi/config`
+
+**设置配置**: `POST http://localhost:5000/api/wifi/config`
+```bash
+curl -X POST http://localhost:5000/api/wifi/config \
+  -H "Content-Type: application/json" \
+  -d '{
+    "wifi_ip": "10.42.1.1",
+    "usb_ip": "192.168.55.1",
+    "current_mode": "wifi"
+  }'
+```
+
+### 4. 健康检查
+**请求地址**: `GET http://localhost:5000/api/health`
+
+## WiFi IP配置说明
+
+系统支持两种连接方式：
+- **WiFi模式**: 10.42.1.1
+- **USB模式**: 192.168.55.1
+
+通过WiFi配置API可以切换当前使用的连接模式。
+
+## 故障排除
+
+1. **模型加载失败**: 检查权重文件路径是否正确
+2. **连接边缘端失败**: 检查边缘端服务器是否启动，以及IP地址是否正确
+3. **端口被占用**: 检查5000端口是否被其他程序占用

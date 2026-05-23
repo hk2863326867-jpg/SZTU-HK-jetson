@@ -1,0 +1,100 @@
+# 整合边缘端服务器 - 运行步骤
+
+## 目录结构
+```
+integrated_server/
+├── integrated_edge_server.py      # 整合的边缘端服务器
+├── unet_split/                   # UNet项目代码
+│   ├── model_encoder.py           # UNet编码器
+│   ├── saved_weights/            # UNet权重
+│   │   └── encoder_weights.pth    # 编码器权重
+│   └── ...
+├── dien_split/                   # DIEN项目代码
+│   ├── edge_encoder.py           # DIEN编码器
+│   ├── checkpoints/              # DIEN检查点
+│   └── ...
+└── ...
+```
+
+## Jetson端环境要求
+
+- Python 3.8+
+- PyTorch (CPU版本)
+- TensorFlow 2.10+
+- numpy, scikit-image
+- CUDA (可选，用于GPU加速)
+
+## 部署步骤
+
+1. 将整个 `integrated_server` 目录上传到Jetson设备：
+```bash
+scp -r integrated_server nvidia@192.168.55.1:~/workspace/
+```
+
+2. 在Jetson设备上安装依赖（如需要）：
+```bash
+pip install torch torchvision numpy scikit-image tensorflow
+```
+
+3. 进入目录并启动服务器：
+```bash
+cd ~/workspace/integrated_server
+python integrated_edge_server.py
+```
+
+## 服务器端口
+
+- **UNet图像分割**: 端口 9000
+- **DIEN推荐编码**: 端口 9001
+
+## 启动日志示例
+
+```
+UNet编码器加载成功，运行在 cpu
+DIEN编码器加载成功
+==================================================
+整合边缘端服务器启动
+==================================================
+UNet图像分割服务: 端口 9000
+DIEN推荐编码服务: 端口 9001
+==================================================
+```
+
+## 服务说明
+
+### UNet图像分割服务 (端口 9000)
+- 接收本地端发送的图像
+- 对图像进行预处理
+- 使用UNet编码器提取特征（瓶颈层+跳跃连接）
+- 将特征发送回本地端
+
+### DIEN推荐编码服务 (端口 9001)
+- 接收本地端发送的用户行为数据
+- 使用DIEN编码器生成隐私保护的隐向量
+- 将隐向量发送回本地端
+
+## 故障排除
+
+1. **端口被占用**:
+```bash
+# 检查端口占用
+netstat -tlnp | grep 9000
+netstat -tlnp | grep 9001
+
+# 杀掉占用进程
+kill -9 <PID>
+```
+
+2. **模型加载失败**:
+   - 检查权重文件路径是否正确
+   - 确保 `saved_weights/encoder_weights.pth` 存在
+   - 确保 `checkpoints/ckpt_noshuffDIEN3_d64` 存在
+
+3. **内存不足**:
+   - 关闭其他占用内存的程序
+   - 使用CPU模式运行（已配置）
+
+4. **连接失败**:
+   - 检查防火墙设置
+   - 确保本地端和边缘端在同一网络
+   - 检查IP地址是否正确

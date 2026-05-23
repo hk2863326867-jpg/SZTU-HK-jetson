@@ -1,0 +1,22 @@
+# 方案：WiFi管理类封装 + 统一服务器
+
+# 说明：WiFi管理功能已封装为WiFiController类，主服务器程序会直接调用
+
+# 步骤：
+# 1. 将以下文件上传到Jetson主机的/home/nvidia/workspace目录：
+#    - jetson_combined_server.py
+#    - wifi_controller.py
+#    - saved_weights/encoder_weights.pth（模型文件）
+
+# 2. 在Jetson主机上直接运行（无需Docker容器）：
+cd /home/nvidia/workspace
+
+# 安装依赖
+pip install flask flask-cors torch torchvision numpy scikit-image opencv-python Pillow
+
+# 运行统一服务器（同时提供WiFi设置和图像编码功能）
+python jetson_combined_server.py
+
+#原分开服务器运行
+cd /workspace
+python jetson_server.py

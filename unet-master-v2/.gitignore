@@ -1,0 +1,103 @@
+# Python 缓存
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# 虚拟环境
+venv/
+env/
+ENV/
+unet_env/
+python_packages/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDE 配置
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 大型数据集（不上传）
+data/membrane/train/
+pascal_voc_person/
+pascal_voc_person/VOCdevkit/
+person_segmentation/dataset/train/
+person_segmentation/real_person_dataset/
+person_segmentation/coco_person/
+CelebAMask-HQ/
+CelebAMask-HQ/CelebA-HQ-img/
+CelebAMask-HQ/CelebAMask-HQ-mask-anno/
+keras_test_celeb/results_celebamask/
+keras_test_celeb/results_voc_with_celeb_model/
+keras_test_celeb/mask_verification/
+keras_test/results_keras_voc/
+data/membrane/test/
+integrated_server/unet_split/test_results/
+
+# 个人测试图片（不上传）
+dataset/test/*.jpg
+dataset/test/*.jpeg
+dataset/test/*.JPG
+dataset/test/*.JPEG
+
+# 下载的压缩文件（不上传）
+*.tar
+*.tar.gz
+*.zip
+
+# 日志文件
+*.log
+
+# 临时文件
+*.tmp
+*.bak
+
+# 大型模型文件（超过100MB，无法上传到GitHub）
+*.keras
+*.hdf5
+*.h5
+*.pb
+*.onnx
+
+# TensorFlow 大型文件
+*.dll
+tensorflow/
+tensorflow_cpu/
+tensorflow_gpu/
+
+# 其他大型文件
+*.pth
+*.pt
+*.ckpt
+*.index
+*.data-*
+
+# 嵌入的 Git 仓库
+material-kit-react-main/
+material-kit-react-main2/
+material-kit-react-main3/
+**/.git/
+
+# DIEN 大型数据文件
+dien413/data/local_train_splitByUser
+dien413/data/local_test_splitByUser
+dien413/UserBehavior.csv
+dien413/*.pkl
+dien413/dien/checkpoints/
+dien_split/checkpoints/
+integrated_server/dien_split/checkpoints/checkpoints/
+integrated_server/dien_split/data/data/
+
+# 测试结果图片
+unet-master-v2/pytorch_unet/results_celeba_pytorch_v3/
+unet-master-v2/pytorch_unet/results_voc_pytorch_v3/
+unet-master-v2/unet_split/test_results/
+
+# 临时图片
+temp_*.jpg
+temp_*.JPG

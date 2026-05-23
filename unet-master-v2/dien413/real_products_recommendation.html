@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品推荐系统 - 真实商品版</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 15px;
+            color: white;
+        }
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            color: #00d9ff;
+            text-shadow: 0 0 20px rgba(0,217,255,0.5);
+        }
+        .section-title {
+            color: #00d9ff;
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .product-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .product-card:hover {
+            transform: translateY(-3px);
+            background: rgba(255,255,255,0.15);
+        }
+        .product-card.selected-history {
+            border-color: #ff6b6b;
+            box-shadow: 0 0 15px rgba(255,107,107,0.5);
+        }
+        .product-card.selected-candidate {
+            border-color: #4ecdc4;
+            box-shadow: 0 0 15px rgba(78,205,196,0.5);
+        }
+        .product-card.recommended {
+            border-color: #ffd93d;
+            box-shadow: 0 0 20px rgba(255,217,61,0.8);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        .product-image {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            background: #f0f0f0;
+        }
+        .product-info {
+            padding: 8px;
+            text-align: center;
+        }
+        .product-name {
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 3px;
+            color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .product-price {
+            color: #ff6b6b;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        .product-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            margin-top: 5px;
+        }
+        .tag-history {
+            background: rgba(255,107,107,0.3);
+            color: #ff6b6b;
+        }
+        .tag-candidate {
+            background: rgba(78,205,196,0.3);
+            color: #4ecdc4;
+        }
+        .action-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .selection-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .count-badge {
+            background: rgba(0,217,255,0.2);
+            color: #00d9ff;
+            padding: 3px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .btn-generate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 40px;
+            font-size: 1rem;
+            border-radius: 50px;
+            color: white;
+            box-shadow: 0 5px 20px rgba(102,126,234,0.4);
+            transition: all 0.3s ease;
+            display: block;
+            margin: 20px auto;
+        }
+        .btn-generate:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 25px rgba(102,126,234,0.6);
+        }
+        .btn-generate:disabled {
+            background: #555;
+            box-shadow: none;
+            transform: none;
+            cursor: not-allowed;
+        }
+        .result-section {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            display: none;
+        }
+        .result-section.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .result-title {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+        }
+        .result-product {
+            display: inline-block;
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            color: #333;
+            max-width: 250px;
+        }
+        .result-product img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .result-product-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .result-product-price {
+            color: #ff6b6b;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .result-product-score {
+            margin-top: 10px;
+            padding: 8px;
+            background: rgba(56,239,125,0.2);
+            border-radius: 8px;
+            color: #11998e;
+            font-size: 0.9rem;
+        }
+        .instructions {
+            background: rgba(102,126,234,0.2);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 3px solid #667eea;
+            font-size: 0.9rem;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .step-number {
+            width: 24px;
+            height: 24px;
+            background: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .category-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .category-tab {
+            padding: 6px 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            font-size: 0.85rem;
+        }
+        .category-tab:hover, .category-tab.active {
+            background: rgba(102,126,234,0.3);
+            border-color: #667eea;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .loading-overlay.show {
+            display: flex;
+        }
+        .loading-content {
+            background: #1a1a2e;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #667eea;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(102,126,234,0.3);
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p style="font-size: 1rem;">正在分析用户行为并生成推荐...</p>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <h1>🛒 商品推荐系统</h1>
+
+        <div class="instructions">
+            <div class="step">
+                <span class="step-number">1</span>
+                <span>选择商品类别</span>
+            </div>
+            <div class="step">
+                <span class="step-number">2</span>
+                <span>点击<strong style="color:#ff6b6b">曾经浏览过</strong>的商品（红色边框）</span>
+            </div>
+            <div class="step">
+                <span class="step-number">3</span>
+                <span>点击<strong style="color:#4ecdc4">想要推荐</strong>的商品（青色边框）</span>
+            </div>
+            <div class="step">
+                <span class="step-number">4</span>
+                <span>点击"🎯 生成推荐"按钮</span>
+            </div>
+        </div>
+
+        <div class="category-tabs" id="categoryTabs">
+            <div class="category-tab active" data-category="all">全部</div>
+            <div class="category-tab" data-category="phone">📱 手机</div>
+            <div class="category-tab" data-category="computer">💻 电脑</div>
+            <div class="category-tab" data-category="tablet">📱 平板</div>
+            <div class="category-tab" data-category="watch">⌚ 手表</div>
+            <div class="category-tab" data-category="clothes">👕 衣服</div>
+            <div class="category-tab" data-category="pants">👖 裤子</div>
+            <div class="category-tab" data-category="shoes">👟 鞋子</div>
+            <div class="category-tab" data-category="bag">👜 包包</div>
+            <div class="category-tab" data-category="headphones">🎧 耳机</div>
+            <div class="category-tab" data-category="camera">📷 相机</div>
+            <div class="category-tab" data-category="game">🎮 游戏机</div>
+            <div class="category-tab" data-category="furniture">🛋️ 家具</div>
+            <div class="category-tab" data-category="kitchen">🍳 厨具</div>
+            <div class="category-tab" data-category="beauty">💄 美妆</div>
+            <div class="category-tab" data-category="skincare">🧴 护肤</div>
+            <div class="category-tab" data-category="snacks">🍿 零食</div>
+            <div class="category-tab" data-category="drinks">🥤 饮料</div>
+        </div>
+
+        <div class="action-section">
+            <div class="selection-info">
+                <h3 class="section-title mb-0">📚 我的浏览历史</h3>
+                <span class="count-badge" id="historyCount">已选: 0 个</span>
+            </div>
+            <div class="products-grid" id="historyProducts"></div>
+        </div>
+
+        <div class="action-section">
+            <div class="selection-info">
+                <h3 class="section-title mb-0">🎁 推荐候选商品</h3>
+                <span class="count-badge" id="candidateCount">已选: 0 个</span>
+            </div>
+            <div class="products-grid" id="candidateProducts"></div>
+        </div>
+
+        <button class="btn-generate" id="generateBtn" disabled>
+            🎯 生成个性化推荐
+        </button>
+
+        <div class="result-section" id="resultSection">
+            <div class="result-title">🌟 系统推荐结果</div>
+            <div class="result-product" id="resultProduct">
+                <img src="" alt="推荐商品" id="resultImage">
+                <div class="result-product-name" id="resultName"></div>
+                <div class="result-product-price" id="resultPrice"></div>
+                <div class="result-product-score" id="resultScore"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const allProducts = [
+            { id: "P001", category: "phone", name: "iPhone 15 Pro", price: "¥7999", image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=300&h=300&fit=crop" },
+            { id: "P002", category: "phone", name: "小米14 Ultra", price: "¥5999", image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=300&h=300&fit=crop" },
+            { id: "P003", category: "phone", name: "华为Mate60", price: "¥6999", image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=300&h=300&fit=crop" },
+            { id: "P004", category: "phone", name: "三星S24 Ultra", price: "¥8999", image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=300&h=300&fit=crop" },
+            { id: "P005", category: "phone", name: "OPPO Find X7", price: "¥4999", image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=300&h=300&fit=crop" },
+            { id: "P006", category: "phone", name: "vivo X100 Pro", price: "¥5499", image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=300&h=300&fit=crop" },
+            { id: "P007", category: "phone", name: "一加12", price: "¥4799", image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=300&h=300&fit=crop" },
+            { id: "P008", category: "phone", name: "荣耀Magic6", price: "¥4699", image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=300&h=300&fit=crop" },
+            { id: "C001", category: "computer", name: "MacBook Pro 14", price: "¥14999", image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=300&h=300&fit=crop" },
+            { id: "C002", category: "computer", name: "ThinkPad X1", price: "¥9999", image: "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=300&h=300&fit=crop" },
+            { id: "C003", category: "computer", name: "戴尔XPS 15", price: "¥12999", image: "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=300&h=300&fit=crop" },
+            { id: "C004", category: "computer", name: "游戏本 RTX4070", price: "¥11999", image: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=300&h=300&fit=crop" },
+            { id: "C005", category: "computer", name: "华为MateBook", price: "¥6999", image: "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=300&h=300&fit=crop" },
+            { id: "C006", category: "computer", name: "惠普暗影精灵", price: "¥8999", image: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=300&h=300&fit=crop" },
+            { id: "C007", category: "computer", name: "联想小新Pro", price: "¥5999", image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=300&h=300&fit=crop" },
+            { id: "C008", category: "computer", name: "苹果iMac 24", price: "¥10999", image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=300&h=300&fit=crop" },
+            { id: "T001", category: "tablet", name: "iPad Pro 12.9", price: "¥9299", image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=300&h=300&fit=crop" },
+            { id: "T002", category: "tablet", name: "iPad Air", price: "¥4799", image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=300&h=300&fit=crop" },
+            { id: "T003", category: "tablet", name: "华为MatePad Pro", price: "¥4699", image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=300&h=300&fit=crop" },
+            { id: "T004", category: "tablet", name: "小米平板6 Pro", price: "¥2999", image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=300&h=300&fit=crop" },
+            { id: "T005", category: "tablet", name: "三星Tab S9", price: "¥7999", image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=300&h=300&fit=crop" },
+            { id: "T006", category: "tablet", name: "联想小新Pad", price: "¥1999", image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=300&h=300&fit=crop" },
+            { id: "W001", category: "watch", name: "Apple Watch S9", price: "¥3299", image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop" },
+            { id: "W002", category: "watch", name: "华为Watch GT4", price: "¥1688", image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop" },
+            { id: "W003", category: "watch", name: "小米手环8 Pro", price: "¥399", image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop" },
+            { id: "W004", category: "watch", name: "三星Watch6", price: "¥1999", image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop" },
+            { id: "W005", category: "watch", name: "OPPO Watch 4", price: "¥2299", image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop" },
+            { id: "W006", category: "watch", name: "荣耀手表4", price: "¥999", image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop" },
+            { id: "CL001", category: "clothes", name: "Nike运动T恤", price: "¥299", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop" },
+            { id: "CL002", category: "clothes", name: "Adidas卫衣", price: "¥599", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=300&h=300&fit=crop" },
+            { id: "CL003", category: "clothes", name: "优衣库衬衫", price: "¥199", image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=300&h=300&fit=crop" },
+            { id: "CL004", category: "clothes", name: "波司登羽绒服", price: "¥899", image: "https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=300&h=300&fit=crop" },
+            { id: "CL005", category: "clothes", name: "Levis牛仔裤", price: "¥499", image: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=300&h=300&fit=crop" },
+            { id: "CL006", category: "clothes", name: "Gap经典T恤", price: "¥149", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop" },
+            { id: "CL007", category: "clothes", name: "北面冲锋衣", price: "¥1899", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=300&h=300&fit=crop" },
+            { id: "CL008", category: "clothes", name: "HM毛衣", price: "¥249", image: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=300&h=300&fit=crop" },
+            { id: "PN001", category: "pants", name: "Nike运动裤", price: "¥399", image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=300&h=300&fit=crop" },
+            { id: "PN002", category: "pants", name: "Adidas运动短裤", price: "¥299", image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=300&h=300&fit=crop" },
+            { id: "PN003", category: "pants", name: "Levis牛仔裤", price: "¥599", image: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=300&h=300&fit=crop" },
+            { id: "PN004", category: "pants", name: "九分裤", price: "¥199", image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=300&h=300&fit=crop" },
+            { id: "PN005", category: "pants", name: "工装裤", price: "¥349", image: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=300&h=300&fit=crop" },
+            { id: "PN006", category: "pants", name: "西装裤", price: "¥459", image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=300&h=300&fit=crop" },
+            { id: "SH001", category: "shoes", name: "Air Jordan 1", price: "¥1399", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&h=300&fit=crop" },
+            { id: "SH002", category: "shoes", name: "Nike Air Max", price: "¥1099", image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop" },
+            { id: "SH003", category: "shoes", name: "Adidas Ultraboost", price: "¥1299", image: "https://images.unsplash.com/photo-1491553895911-0055uj8d3d5b?w=300&h=300&fit=crop" },
+            { id: "SH004", category: "shoes", name: "New Balance 574", price: "¥699", image: "https://images.unsplash.com/photo-1539185441755-769473a23570?w=300&h=300&fit=crop" },
+            { id: "SH005", category: "shoes", name: "匡威经典款", price: "¥569", image: "https://images.unsplash.com/photo-1463100099107-aa0980c362e6?w=300&h=300&fit=crop" },
+            { id: "SH006", category: "shoes", name: "Vans Old Skool", price: "¥499", image: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=300&h=300&fit=crop" },
+            { id: "SH007", category: "shoes", name: "耐克篮球鞋", price: "¥1199", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&h=300&fit=crop" },
+            { id: "SH008", category: "shoes", name: "阿迪跑鞋", price: "¥899", image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop" },
+            { id: "BG001", category: "bag", name: "LVneverfull", price: "¥11999", image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=300&h=300&fit=crop" },
+            { id: "BG002", category: "bag", name: "Gucci双肩包", price: "¥8999", image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=300&fit=crop" },
+            { id: "BG003", category: "bag", name: "耐克运动包", price: "¥299", image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=300&fit=crop" },
+            { id: "BG004", category: "bag", name: "MK单肩包", price: "¥2999", image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=300&h=300&fit=crop" },
+            { id: "BG005", category: "bag", name: "北极狐双肩包", price: "¥699", image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=300&fit=crop" },
+            { id: "BG006", category: "bag", name: "jansport", price: "¥299", image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=300&fit=crop" },
+            { id: "HP001", category: "headphones", name: "AirPods Pro 2", price: "¥1799", image: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=300&h=300&fit=crop" },
+            { id: "HP002", category: "headphones", name: "Sony WH-1000XM5", price: "¥2499", image: "https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=300&h=300&fit=crop" },
+            { id: "HP003", category: "headphones", name: "Bose QC45", price: "¥2299", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop" },
+            { id: "HP004", category: "headphones", name: "小米降噪耳机", price: "¥699", image: "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=300&h=300&fit=crop" },
+            { id: "HP005", category: "headphones", name: "华为FreeBuds", price: "¥899", image: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=300&h=300&fit=crop" },
+            { id: "HP006", category: "headphones", name: "Beats Studio3", price: "¥1899", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop" },
+            { id: "CA001", category: "camera", name: "索尼A7M4", price: "¥16999", image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=300&h=300&fit=crop" },
+            { id: "CA002", category: "camera", name: "佳能R6 II", price: "¥17999", image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=300&h=300&fit=crop" },
+            { id: "CA003", category: "camera", name: "富士X-T5", price: "¥11999", image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=300&h=300&fit=crop" },
+            { id: "CA004", category: "camera", name: "尼康Z8", price: "¥25999", image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=300&h=300&fit=crop" },
+            { id: "CA005", category: "camera", name: "GoPro Hero12", price: "¥2998", image: "https://images.unsplash.com/photo-1564466809058-bf4114d55352?w=300&h=300&fit=crop" },
+            { id: "CA006", category: "camera", name: "大疆Action4", price: "¥2298", image: "https://images.unsplash.com/photo-1564466809058-bf4114d55352?w=300&h=300&fit=crop" },
+            { id: "GM001", category: "game", name: "PS5", price: "¥3899", image: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=300&h=300&fit=crop" },
+            { id: "GM002", category: "game", name: "Xbox Series X", price: "¥3599", image: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=300&h=300&fit=crop" },
+            { id: "GM003", category: "game", name: "Switch OLED", price: "¥2249", image: "https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?w=300&h=300&fit=crop" },
+            { id: "GM004", category: "game", name: "Steam Deck", price: "¥3999", image: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=300&h=300&fit=crop" },
+            { id: "GM005", category: "game", name: "Switch Lite", price: "¥1499", image: "https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?w=300&h=300&fit=crop" },
+            { id: "GM006", category: "game", name: "Xbox Series S", price: "¥2399", image: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=300&h=300&fit=crop" },
+            { id: "FN001", category: "furniture", name: "宜家书桌", price: "¥999", image: "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=300&h=300&fit=crop" },
+            { id: "FN002", category: "furniture", name: "电竞椅", price: "¥1299", image: "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?w=300&h=300&fit=crop" },
+            { id: "FN003", category: "furniture", name: "人体工学椅", price: "¥1999", image: "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?w=300&h=300&fit=crop" },
+            { id: "FN004", category: "furniture", name: "小米台灯", price: "¥169", image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=300&h=300&fit=crop" },
+            { id: "FN005", category: "furniture", name: "投影仪", price: "¥2999", image: "https://images.unsplash.com/photo-1595769816263-9b910be24d5f?w=300&h=300&fit=crop" },
+            { id: "FN006", category: "furniture", name: "显示器支架", price: "¥299", image: "https://images.unsplash.com/photo-1595769816263-9b910be24d5f?w=300&h=300&fit=crop" },
+            { id: "KT001", category: "kitchen", name: "空气炸锅", price: "¥399", image: "https://images.unsplash.com/photo-1585515320310-259814833e62?w=300&h=300&fit=crop" },
+            { id: "KT002", category: "kitchen", name: "破壁机", price: "¥699", image: "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=300&h=300&fit=crop" },
+            { id: "KT003", category: "kitchen", name: "多功能电饭煲", price: "¥599", image: "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=300&h=300&fit=crop" },
+            { id: "KT004", category: "kitchen", name: "咖啡机", price: "¥999", image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=300&h=300&fit=crop" },
+            { id: "KT005", category: "kitchen", name: "榨汁杯", price: "¥199", image: "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=300&h=300&fit=crop" },
+            { id: "KT006", category: "kitchen", name: "烤箱", price: "¥499", image: "https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?w=300&h=300&fit=crop" },
+            { id: "BT001", category: "beauty", name: "迪奥999口红", price: "¥350", image: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=300&h=300&fit=crop" },
+            { id: "BT002", category: "beauty", name: "阿玛尼405", price: "¥310", image: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=300&h=300&fit=crop" },
+            { id: "BT003", category: "beauty", name: "YSL小金条", price: "¥335", image: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=300&h=300&fit=crop" },
+            { id: "BT004", category: "beauty", name: "兰蔻粉底液", price: "¥430", image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=300&h=300&fit=crop" },
+            { id: "BT005", category: "beauty", name: "雅诗兰黛DW", price: "¥390", image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=300&h=300&fit=crop" },
+            { id: "BT006", category: "beauty", name: "TF眼影盘", price: "¥599", image: "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=300&h=300&fit=crop" },
+            { id: "SK001", category: "skincare", name: "兰蔻小黑瓶", price: "¥760", image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=300&h=300&fit=crop" },
+            { id: "SK002", category: "skincare", name: "雅诗兰黛小棕瓶", price: "¥699", image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=300&h=300&fit=crop" },
+            { id: "SK003", category: "skincare", name: "SK-II神仙水", price: "¥1199", image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=300&h=300&fit=crop" },
+            { id: "SK004", category: "skincare", name: "科颜氏高保湿", price: "¥345", image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=300&h=300&fit=crop" },
+            { id: "SK005", category: "skincare", name: "修丽可CE精华", price: "¥1499", image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=300&h=300&fit=crop" },
+            { id: "SK006", category: "skincare", name: "薇诺娜特护霜", price: "¥268", image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=300&h=300&fit=crop" },
+            { id: "SN001", category: "snacks", name: "薯片大礼包", price: "¥49.9", image: "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=300&h=300&fit=crop" },
+            { id: "SN002", category: "snacks", name: "巧克力礼盒", price: "¥89", image: "https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=300&h=300&fit=crop" },
+            { id: "SN003", category: "snacks", name: "坚果混合装", price: "¥68", image: "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?w=300&h=300&fit=crop" },
+            { id: "SN004", category: "snacks", name: "饼干礼盒", price: "¥59", image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=300&h=300&fit=crop" },
+            { id: "SN005", category: "snacks", name: "肉脯大礼包", price: "¥78", image: "https://images.unsplash.com/photo-1546521343-4eb2c01aa44b?w=300&h=300&fit=crop" },
+            { id: "SN006", category: "snacks", name: "糖果礼盒", price: "¥45", image: "https://images.unsplash.com/photo-1582058091505-f87a2e55a40f?w=300&h=300&fit=crop" },
+            { id: "DR001", category: "drinks", name: "咖啡豆", price: "¥68", image: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=300&h=300&fit=crop" },
+            { id: "DR002", category: "drinks", name: "茶叶礼盒", price: "¥128", image: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=300&h=300&fit=crop" },
+            { id: "DR003", category: "drinks", name: "红酒礼盒", price: "¥298", image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=300&h=300&fit=crop" },
+            { id: "DR004", category: "drinks", name: "可乐整箱", price: "¥59", image: "https://images.unsplash.com/photo-1554866585-cd94860890b7?w=300&h=300&fit=crop" },
+            { id: "DR005", category: "drinks", name: "果汁整箱", price: "¥68", image: "https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=300&h=300&fit=crop" },
+            { id: "DR006", category: "drinks", name: "矿泉水整箱", price: "¥35", image: "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=300&h=300&fit=crop" }
+        ];
+
+        let currentCategory = "all";
+        let selectedHistory = new Set();
+        let selectedCandidates = new Set();
+
+        function createProductCard(product, isHistory = false) {
+            const card = document.createElement("div");
+            card.className = "product-card";
+            card.dataset.productId = product.id;
+
+            card.innerHTML = `
+                <img src="${product.image}" alt="${product.name}" class="product-image"
+                     onerror="this.src='https://via.placeholder.com/300x300/cccccc/666666?text=${encodeURIComponent(product.name)}'">
+                <div class="product-info">
+                    <div class="product-name" title="${product.name}">${product.name}</div>
+                    <div class="product-price">${product.price}</div>
+                    <div class="product-tag ${isHistory ? "tag-history" : "tag-candidate"}" style="display:none;">
+                        ${isHistory ? "📖 已浏览" : "🎯 待推荐"}
+                    </div>
+                </div>
+            `;
+
+            card.addEventListener("click", () => toggleSelection(card, product, isHistory));
+
+            return card;
+        }
+
+        function toggleSelection(card, product, isHistory) {
+            if (isHistory) {
+                if (selectedHistory.has(product.id)) {
+                    selectedHistory.delete(product.id);
+                    card.classList.remove("selected-history");
+                    card.querySelector(".tag-history").style.display = "none";
+                } else {
+                    selectedHistory.add(product.id);
+                    card.classList.add("selected-history");
+                    card.querySelector(".tag-history").style.display = "inline-block";
+                }
+                updateHistoryCount();
+            } else {
+                if (selectedCandidates.has(product.id)) {
+                    selectedCandidates.delete(product.id);
+                    card.classList.remove("selected-candidate");
+                    card.querySelector(".tag-candidate").style.display = "none";
+                } else {
+                    selectedCandidates.add(product.id);
+                    card.classList.add("selected-candidate");
+                    card.querySelector(".tag-candidate").style.display = "inline-block";
+                }
+                updateCandidateCount();
+            }
+
+            updateGenerateButton();
+        }
+
+        function updateHistoryCount() {
+            document.getElementById("historyCount").textContent = `已选: ${selectedHistory.size} 个`;
+        }
+
+        function updateCandidateCount() {
+            document.getElementById("candidateCount").textContent = `已选: ${selectedCandidates.size} 个`;
+        }
+
+        function updateGenerateButton() {
+            const btn = document.getElementById("generateBtn");
+            btn.disabled = selectedHistory.size === 0 || selectedCandidates.size === 0;
+        }
+
+        function initializeProducts() {
+            const historyContainer = document.getElementById("historyProducts");
+            const candidateContainer = document.getElementById("candidateProducts");
+
+            historyContainer.innerHTML = "";
+            candidateContainer.innerHTML = "";
+
+            const filteredProducts = currentCategory === "all"
+                ? allProducts
+                : allProducts.filter(p => p.category === currentCategory);
+
+            filteredProducts.forEach(product => {
+                historyContainer.appendChild(createProductCard(product, true));
+                candidateContainer.appendChild(createProductCard(product, false));
+            });
+        }
+
+        document.querySelectorAll(".category-tab").forEach(tab => {
+            tab.addEventListener("click", () => {
+                document.querySelectorAll(".category-tab").forEach(t => t.classList.remove("active"));
+                tab.classList.add("active");
+                currentCategory = tab.dataset.category;
+                initializeProducts();
+            });
+        });
+
+        async function generateRecommendation() {
+            const loadingOverlay = document.getElementById("loadingOverlay");
+            const resultSection = document.getElementById("resultSection");
+
+            loadingOverlay.classList.add("show");
+            resultSection.classList.remove("show");
+
+            const historyItems = Array.from(selectedHistory);
+            const candidateItems = Array.from(selectedCandidates);
+
+            const getCategoryById = (id) => {
+                const product = allProducts.find(p => p.id === id);
+                return product ? product.category.toUpperCase() : "794437";
+            };
+
+            const requestData = {
+                user_id: "USER001",
+                history_items: historyItems,
+                history_categories: historyItems.map(id => getCategoryById(id)),
+                candidate_items: candidateItems,
+                candidate_categories: candidateItems.map(id => getCategoryById(id))
+            };
+
+            try {
+                const response = await fetch("http://localhost:5001/api/dien/recommend", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                const data = await response.json();
+
+                if (data.recommendations && data.recommendations.length > 0) {
+                    const topRecommendation = data.recommendations[0];
+                    const product = allProducts.find(p => p.id === topRecommendation.item_id);
+
+                    if (product) {
+                        document.getElementById("resultImage").src = product.image;
+                        document.getElementById("resultName").textContent = product.name;
+                        document.getElementById("resultPrice").textContent = product.price;
+                        document.getElementById("resultScore").textContent =
+                            `预测点击概率: ${(topRecommendation.score * 100).toFixed(1)}%`;
+
+                        resultSection.classList.add("show");
+
+                        document.querySelectorAll("#candidateProducts .product-card").forEach(card => {
+                            if (card.dataset.productId === topRecommendation.item_id) {
+                                card.classList.add("recommended");
+                            }
+                        });
+
+                        resultSection.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("生成推荐时出错，请确保后端服务正在运行！");
+            } finally {
+                loadingOverlay.classList.remove("show");
+            }
+        }
+
+        document.getElementById("generateBtn").addEventListener("click", generateRecommendation);
+
+        initializeProducts();
+    </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+local_server
+cd d:\OneDrive\桌面\github\unet-master\unet_split
+
+C:\Users\Hkuan\AppData\Local\Programs\Python\Python312\python.exe local_server.py
+
+
+
+react
+
+cd d:\OneDrive\桌面\github\unet-master\material-kit-react-main
+
+cd "d:\OneDrive\桌面\github\unet-master\material-kit-react-main (2)\material-kit-react-main"
+
+cd d:\OneDrive\桌面\github\unet-master\material-kit-react-main3\material-kit-react-main\material-kit-react-main
+
+npm run dev
